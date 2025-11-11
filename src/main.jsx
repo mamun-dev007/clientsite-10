@@ -13,6 +13,7 @@ import NotFound from "./routes/NotFound.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import { AuthProvider } from "./context/AuthContext.jsx"
 import PublicHabit from "./routes/PublicHabit.jsx";
+import UpdateHabit from "./routes/UpdateHabit.jsx";
 
 const router = createBrowserRouter([
   {
@@ -50,6 +51,7 @@ const router = createBrowserRouter([
       // },
       { path: "login", element: <Login /> },
       { path: "register", element: <Register /> },
+      { path: "/updatehabit/:id", element: <UpdateHabit></UpdateHabit>},
       { path: "*", element: <NotFound /> },
     ],
   },
