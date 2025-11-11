@@ -3,7 +3,7 @@ import { AuthContext } from "../context/AuthContext";
 import app from "../firebase.config";
 import { getAuth, sendPasswordResetEmail } from "firebase/auth";
 import Loading from "../components/Loading";
-import { Link, useLocation, useNavigate } from "react-router";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import { toast } from 'react-toastify';
 
@@ -65,8 +65,7 @@ const Login = () => {
     <div className="max-w-md mx-auto mt-10 p-6 border rounded-md shadow ">
       <h2 className="text-2xl font-bold mb-4 text-green-700">Login</h2>
 
-      <div className="">{loading ?<span class="loading loading-spinner text-primary"></span>
- : ""}</div>
+      <div className=""></div>
       {error && <p className="text-red-600">{error}</p>}
 
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -107,7 +106,8 @@ const Login = () => {
             disabled={loading}
             className="px-4 py-2 bg-green-700 text-white rounded"
           >
-            login
+             {loading ?<span class="loading loading-spinner text-primary"></span>
+ : "login"}
           </button>
 
           <button

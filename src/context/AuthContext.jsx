@@ -23,22 +23,24 @@ export const AuthProvider = ({children}) => {
   const updateUserProfile = (Profile) =>{
     return updateProfile(auth.currentUser, Profile );
   }
+  const logOut = () => signOut(auth);
 
   useEffect(()=> {
-    const unsub = onAuthStateChanged(auth, current => {
-      setUser(current);
+    const unsub = onAuthStateChanged(auth, currentUser => {
+      setUser(currentUser);
       setLoading(false);
     });
     return ()=> unsub();
   },[]);
 
-  const logOut = () => signOut(auth);
   const value = { user,  signUp, logIn, googleLogin, logOut, updateUserProfile };
-
+ if (loading) {
+    return <Loading />;
+  }
   return (
     <AuthContext.Provider value={ value }>
+      
       {children}
-      {loading && <Loading></Loading>}
     </AuthContext.Provider>
   );
 };
