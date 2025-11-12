@@ -3,7 +3,7 @@ import HeroSlider from "../home/HeroSlider";
 import FeaturedSection from "../home/FeaturedSection";
 import WhyBuildHabits from "../home/WhyBuildHabits";
 import SuccessStories from "../home/SuccessStories";
-// import ExtraSection2 from "../home/HeroSlider";
+import Community from "../home/Community";
 
 const Home = () => {
   return (
@@ -12,6 +12,7 @@ const Home = () => {
       <FeaturedSection></FeaturedSection>
       <WhyBuildHabits></WhyBuildHabits>
       <SuccessStories></SuccessStories> 
+      <Community></Community>
     </div>
   );
 };
