@@ -42,7 +42,7 @@ const Navbar = () => {
       <nav className="max-w-7xl mx-auto flex items-center justify-between px-6 py-3">
         
         <Link to="/" className="text-2xl font-bold text-blue-700">
-          HabitHero
+          Habit Tracker
         </Link>
         <div className="hidden md:flex items-center gap-4">
           <div className="flex gap-2">{navLinks}</div>

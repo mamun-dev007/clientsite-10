@@ -3,6 +3,7 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { motion } from "framer-motion";
 
 const App = () => {
 
@@ -10,13 +11,32 @@ const App = () => {
 
   return (
   <>
-    <div className="flex flex-col min-h-screen">
-      <Navbar />
-      <main className="">
+  <div className="">
+
+<Navbar />
+  </div>
+
+<div className="">
+<motion.section
+  initial={{ opacity: 0, y: 50 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ duration: 0.6, ease: "easeOut" }}
+  
+>
+<main className=" min-h-screen">
         <Outlet />
       </main>
+ </motion.section>
+
+
+    
+      
+      
       <Footer />
     </div>
+
+
+
 
  <ToastContainer
         position="top-center"
@@ -29,6 +49,9 @@ const App = () => {
         pauseOnHover
         theme="light"
       />
+
+
+      
 
       </>
   );

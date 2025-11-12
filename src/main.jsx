@@ -14,13 +14,16 @@ import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import { AuthProvider } from "./context/AuthContext.jsx"
 import PublicHabit from "./routes/PublicHabit.jsx";
 import UpdateHabit from "./routes/UpdateHabit.jsx";
+import PublicHabits from "./routes/PublicHabit.jsx";
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <App />,
     children: [
-      { index: true, element: <Home /> },
+      { index: true, 
+        element: <Home /> 
+      },
       {
         path: "/add-habit",
         element: (
@@ -41,18 +44,31 @@ const router = createBrowserRouter([
         path: "/publichabit",
         element:<PublicHabit></PublicHabit>
       },
-      // {
-      //   path: "habit/:id",
-      //   element: (
-      //     <ProtectedRoute>
-      //       <HabitDetails />
-      //     </ProtectedRoute>
-      //   ),
-      // },
-      { path: "login", element: <Login /> },
-      { path: "register", element: <Register /> },
-      { path: "/updatehabit/:id", element: <UpdateHabit></UpdateHabit>},
-      { path: "*", element: <NotFound /> },
+      {
+        path: "habit-details/:id",
+        element: (
+          <ProtectedRoute>
+            <HabitDetails />
+          </ProtectedRoute>
+        ),
+      },
+      { path: "login", 
+        element: <Login /> 
+      },
+      { path: "register", 
+        element: <Register /> 
+      },
+      { path: "/updatehabit/:id", 
+        element: <UpdateHabit></UpdateHabit>
+      },
+      { path: "*", 
+        element: <NotFound /> 
+      },
+      {
+       path: "/public-habits",
+        element: <PublicHabits />,
+      },
+     
     ],
   },
 ]);
