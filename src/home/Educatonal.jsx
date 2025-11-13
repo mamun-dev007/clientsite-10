@@ -1,10 +1,17 @@
 import React from 'react';
-
+import { motion } from "framer-motion";
 const Educatonal = () => {
     return (
         <div>
-            <section className="py-16 bg-blue-50 mt-10">
-  <div className="max-w-6xl mx-auto text-center px-4">
+            <section className="py-16 bg-blue-50">
+            <motion.section
+      initial={{ opacity: 0, y: 50 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.8, ease: "easeOut" }}
+      viewport={{ once: true }}
+      className=" text-center"
+    >
+  <div className="max-w-7xl mx-auto text-center px-4">
     <h2 className="text-3xl font-bold text-blue-700 mb-10"> How It Works</h2>
     <div className="grid md:grid-cols-4 sm:grid-cols-2 gap-6">
       {[
@@ -23,6 +30,7 @@ const Educatonal = () => {
       ))}
     </div>
   </div>
+  </motion.section>
 </section>
 
         </div>

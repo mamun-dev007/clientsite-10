@@ -6,38 +6,26 @@ import "react-toastify/dist/ReactToastify.css";
 import { motion } from "framer-motion";
 
 const App = () => {
-
-  
-
   return (
-  <>
-  <div className="">
+    <>
+      <div className="">
+        <motion.section
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+        ></motion.section>
 
-<Navbar />
-  </div>
+        <div className="">
+          <Navbar />
+        </div>
+        <main className=" min-h-screen bg-blue-50">
+          <Outlet />
+        </main>
 
-<div className="">
-<motion.section
-  initial={{ opacity: 0, y: 50 }}
-  animate={{ opacity: 1, y: 0 }}
-  transition={{ duration: 0.6, ease: "easeOut" }}
->
-<main className=" min-h-screen">
-        <Outlet />
-      </main>
- </motion.section>
+        <Footer />
+      </div>
 
-
-    
-      
-      
-      <Footer />
-    </div>
-
-
-
-
- <ToastContainer
+      <ToastContainer
         position="top-center"
         autoClose={3000}
         hideProgressBar={false}
@@ -48,11 +36,7 @@ const App = () => {
         pauseOnHover
         theme="light"
       />
-
-
-      
-
-      </>
+    </>
   );
 };
 

@@ -1,40 +1,40 @@
 import React, { useState, useEffect } from "react";
-
+import { motion } from "framer-motion";
 const SuccessStories = () => {
   const stories = [
     {
       name: "Dr. Novel",
       habit: "Morning Exercise",
       quote: "Now I wake up early and feel more energetic!",
-      img: "https://i.ibb.co/4gKpBfC/avatar1.png",
+      img: "https://i.ibb.co.com/DHBNGRfy/OIP.jpg",
       color: "bg-blue-200",
     },
     {
       name: "Scientist A Roman",
       habit: "Reading Daily",
       quote: "Consistency changed my mindset.",
-      img: "https://i.ibb.co/mC7KJ3Q/avatar2.png",
+      img: "https://i.ibb.co.com/8DDCKRwB/OIP-1.jpg",
       color: "bg-green-200",
     },
     {
       name: "Elina Noor",
       habit: "Meditation",
       quote: "Less stress, more focus — life feels balanced!",
-      img: "https://i.ibb.co/y8VcYvj/avatar3.png",
+      img: "https://i.ibb.co.com/20f4Xbvw/OIP-2.jpg",
       color: "bg-pink-200",
     },
     {
       name: "Rafi Islam",
       habit: "Healthy Eating",
       quote: "Discipline made me stronger mentally.",
-      img: "https://i.ibb.co/5YxBG7L/avatar4.png",
+      img: "https://i.ibb.co.com/tMWh9yHq/OIP-3.jpg",
       color: "bg-yellow-200",
     },
     {
       name: "Tania Sultana",
       habit: "Journaling",
       quote: "Writing daily helped me clear my thoughts.",
-      img: "https://i.ibb.co/d6PvH4V/avatar5.png",
+      img: "https://i.ibb.co.com/Kxdh02n9/OIP-4.jpg",
       color: "bg-purple-200",
     },
     {
@@ -59,7 +59,14 @@ const SuccessStories = () => {
   const next = (index + 1) % stories.length;
 
   return (
-    <section className="bg-blue-50 py-12 mt-12 overflow-hidden">
+    <section className="bg-blue-30 py-12 overflow-hidden">
+    <motion.section
+      initial={{ opacity: 0, y: 50 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.8, ease: "easeOut" }}
+      viewport={{ once: true }}
+      className=" text-center"
+    >
       <div className="max-w-6xl mx-auto px-4 text-center">
         <h2 className="text-3xl font-bold text-blue-700 mb-10">
           Success Stories
@@ -111,6 +118,7 @@ const SuccessStories = () => {
           </div>
         </div>
       </div>
+      </motion.section>
     </section>
   );
 };

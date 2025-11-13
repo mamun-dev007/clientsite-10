@@ -1,4 +1,5 @@
 import React from "react";
+import { motion } from "framer-motion";
 import { FaBrain, FaSmile, FaClock, FaChartLine, FaHeartbeat, FaUsers, FaBook, FaTrophy} from "react-icons/fa";
 
 
@@ -47,9 +48,16 @@ const benefits = [
 ];
 
 const WhyBuildHabits  = () => (
-  <section className="bg-gray-50 py-12">
+  <section className="bg-gray-50 py-10">
+  <motion.section
+      initial={{ opacity: 0, y: 50 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.8, ease: "easeOut" }}
+      viewport={{ once: true }}
+      className=" text-center"
+    >
     <h2 className="text-3xl font-bold text-blue-700 mb-8 text-center">Why Build Habits?</h2>
-    <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-6">
+    <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 px-5 xl:px-0 gap-6">
       {benefits.map((b, i) => (
         <div key={i} className="bg-white p-6 rounded shadow text-center">
           <div className="mb-4 text-blue-600 justify-center flex">{b.icon}</div>
@@ -57,7 +65,7 @@ const WhyBuildHabits  = () => (
           <p className="text-gray-600">{b.desc}</p>
         </div>
       ))}
-    </div>
+    </div></motion.section>
   </section>
 );
 

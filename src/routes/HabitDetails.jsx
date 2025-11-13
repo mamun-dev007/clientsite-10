@@ -6,15 +6,35 @@ const HabitDetails = () => {
   const { id } = useParams();
   const [habit, setHabit] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [completedToday, setCompletedToday] = useState(false);
+  const today = new Date().toISOString().split("T")[0];
 
   useEffect(() => {
+    const storedProgress = JSON.parse(localStorage.getItem("habitProgress") || "{}");
+    const storedHabits = JSON.parse(localStorage.getItem("completedHabits") || "{}");
+
     fetch(`http://localhost:3000/api/habits/${id}`)
       .then((res) => res.json())
-      .then((data) => setHabit(data))
+      .then((data) => {
+        if (storedProgress[id]) {
+          data.streak = storedProgress[id].streak;
+          data.completionHistory = storedProgress[id].completionHistory;
+        }
+        setHabit(data);
+      })
       .finally(() => setLoading(false));
-  }, [id]);
+
+    if (storedHabits[id] === today) {
+      setCompletedToday(true);
+    }
+  }, [id, today]);
 
   const handleComplete = async () => {
+    if (completedToday) {
+      toast.info("Already completed today!");
+      return;
+    }
+
     try {
       const res = await fetch(`http://localhost:3000/api/habits/complete/${id}`, {
         method: "PATCH",
@@ -22,17 +42,29 @@ const HabitDetails = () => {
       const data = await res.json();
 
       if (data.modifiedCount > 0) {
-        toast.success(" Habit marked complete for today!");
-        setHabit((prev) => {
-          const today = new Date().toISOString().split("T")[0];
-          return {
-            ...prev,
-            streak: (prev.streak || 0) + 1,
-            completionHistory: [...(prev.completionHistory || []), today],
-          };
-        });
+        toast.success("Habit marked complete for today!");
+
+        const updatedHabit = {
+          ...habit,
+          streak: (habit.streak || 0) + 1,
+          completionHistory: [...(habit.completionHistory || []), today],
+        };
+
+        setHabit(updatedHabit);
+        setCompletedToday(true);
+
+        const storedProgress = JSON.parse(localStorage.getItem("habitProgress") || "{}");
+        storedProgress[id] = {
+          streak: updatedHabit.streak,
+          completionHistory: updatedHabit.completionHistory,
+        };
+        localStorage.setItem("habitProgress", JSON.stringify(storedProgress));
+
+        const storedHabits = JSON.parse(localStorage.getItem("completedHabits") || "{}");
+        storedHabits[id] = today;
+        localStorage.setItem("completedHabits", JSON.stringify(storedHabits));
       } else {
-        toast.info(" Already marked complete today!");
+        toast.info("Already marked complete today!");
       }
     } catch (err) {
       toast.error(err,"Failed to mark complete!");
@@ -42,10 +74,9 @@ const HabitDetails = () => {
   if (loading) return <p className="text-center mt-10">Loading habit details...</p>;
   if (!habit) return <p className="text-center text-red-500 mt-10">Habit not found!</p>;
 
-  const today = new Date();
   const last30Days = Array.from({ length: 30 }, (_, i) => {
-    const d = new Date(today);
-    d.setDate(today.getDate() - i);
+    const d = new Date();
+    d.setDate(d.getDate() - i);
     return d.toISOString().split("T")[0];
   });
 
@@ -58,7 +89,7 @@ const HabitDetails = () => {
       <img
         src={habit.image || "https://via.placeholder.com/500"}
         alt={habit.title}
-        className="w-full h-64 object-cover"
+        className="w-11/12 mx-auto mt-5 rounded-t-2xl h-64 object-cover"
       />
       <div className="p-6">
         <div className="flex justify-between items-center mb-3">
@@ -77,33 +108,36 @@ const HabitDetails = () => {
         </p>
 
         <div className="mb-4">
-  <label className="text-sm font-medium">Progress (last 30 days)</label>
-  <div className="w-full bg-gray-200 rounded-full h-3 mt-1">
-    <div
-      className={`h-3 rounded-full transition-all duration-300 ${
-        progress === 100 ? "bg-green-600" : "bg-blue-600"
-      }`}
-      style={{ width: `${progress}%` }}
-    ></div>
-  </div>
-  <p className="text-sm text-gray-600 mt-1">
-    {progress}% completed
-    {progress === 100 && " 🎉 Goal Achieved!"}
-  </p>
-</div>
+          <label className="text-sm font-medium">Progress (last 30 days)</label>
+          <div className="w-full bg-gray-200 rounded-full h-3 mt-1">
+            <div
+              className={`h-3 rounded-full transition-all duration-500 ${
+                progress === 100 ? "bg-green-600" : "bg-blue-600"
+              }`}
+              style={{ width: `${progress}%` }}
+            ></div>
+          </div>
+          <p className="text-sm text-gray-600 mt-1">
+            {progress}% completed
+            {progress === 100 && " 🎉 Goal Achieved!"}
+          </p>
+        </div>
 
-<button
-  onClick={handleComplete}
-  disabled={progress === 100}
-  className={`mt-4 w-full py-2 rounded-md transition ${
-    progress === 100
-      ? "bg-gray-400 cursor-not-allowed text-gray-700"
-      : "bg-blue-600 text-white hover:bg-blue-700"
-  }`}
->
-  {progress === 100 ? "All Done! " : "Mark Complete "}
-</button>
-
+        <button
+          onClick={handleComplete}
+          disabled={completedToday || progress === 100}
+          className={`mt-4 w-full py-2 rounded-md transition ${
+            completedToday || progress === 100
+              ? "bg-gray-400 cursor-not-allowed text-gray-700"
+              : "bg-blue-600 text-white hover:bg-blue-700"
+          }`}
+        >
+          {completedToday
+            ? "Already Completed Today "
+            : progress === 100
+            ? "All Done! 🎯"
+            : "Mark Complete"}
+        </button>
       </div>
     </div>
   );

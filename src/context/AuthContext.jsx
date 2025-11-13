@@ -9,9 +9,8 @@ import { getAuth, onAuthStateChanged, signOut ,signInWithEmailAndPassword,
 import Loading from '../components/Loading';
 
 export const AuthContext = createContext();
-const googleProvider = new GoogleAuthProvider();
-
 const auth = getAuth(app);
+const googleProvider = new GoogleAuthProvider();
 
 export const AuthProvider = ({children}) => {
   const [user, setUser] = useState(null);
@@ -26,10 +25,32 @@ export const AuthProvider = ({children}) => {
   const logOut = () => signOut(auth);
 
   useEffect(()=> {
-    const unsub = onAuthStateChanged(auth, currentUser => {
+    const unsub = onAuthStateChanged(auth, async(currentUser) => {
       setUser(currentUser);
-      setLoading(false);
-    });
+
+      if (currentUser) {
+        const loggeds = { email: currentUser.email}
+  try {
+    const res = await fetch("http://localhost:3000/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(loggeds),
+    })
+    .then(res=>res.json())
+    .then(data => {
+      console.log('hello token',data.token)
+      localStorage.setItem("access-token", data.token);
+    })  
+  } catch (error) {
+    console.error("JWT fetch failed:", error);
+  }
+} else {
+  localStorage.removeItem("access-token");
+}
+
+setLoading(false);
+});
+
     return ()=> unsub();
   },[]);
 

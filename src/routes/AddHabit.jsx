@@ -8,6 +8,41 @@ const AddHabit = () => {
   const [imageUrl, setImageUrl] = useState("");
   const [uploading, setUploading] = useState(false);
 
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setUploading(true);
+    const formData = new FormData();
+    formData.append("image", file);
+
+    try {
+      const res = await fetch(
+        `https://api.imgbb.com/1/upload?key=${import.meta.env.VITE_IMGBB_KEY}`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      const json = await res.json();
+
+      if (json.success) {
+        const imageUrl = json.data.display_url;
+        setImageUrl(imageUrl);
+        toast.success("Image uploaded successfully!");
+      } else {
+        console.error("imgbb upload failed:", json);
+        toast.error("Image upload failed!");
+      }
+    } catch (err) {
+      console.error("Upload error:", err);
+      toast.error("Image upload error!");
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -26,7 +61,7 @@ const AddHabit = () => {
       image: imageUrl,
       userEmail: user?.email,
       userName: user?.displayName,
-      isPublic: true, 
+      isPublic: true,
     };
 
     try {
@@ -38,70 +73,40 @@ const AddHabit = () => {
 
       const data = await res.json();
       if (data.insertedId) {
-        toast.success(" Habit added successfully!");
+        toast.success("Habit added successfully!");
         form.reset();
         setImageUrl("");
       } else {
-        toast.error(" Failed to add habit!");
+        toast.error("Failed to add habit!");
       }
     } catch (err) {
-      toast.error(err," Something went wrong!");
+      console.error(err);
+      toast.error("Something went wrong!");
     } finally {
       setLoading(false);
     }
   };
 
- 
-  const handleImageUpload = async (e) => {
-    const image = e.target.files[0];
-    if (!image) return;
-
-    setUploading(true);
-
-    const formData = new FormData();
-    formData.append("image", image);
-
-    try {
-      const res = await fetch(
-        `https://api.imgbb.com/1/upload?key=${import.meta.env.VITE_IMGBB_KEY}`,
-        { method: "POST",
-          body: formData }
-      );
-      const data = await res.json();
-      if (data.data?.display_url) {
-        setImageUrl(data.data.display_url);
-        toast.success(" Image uploaded successfully!");
-      } else {
-        toast.error("Image upload failed!");
-      }
-    } catch (error) {
-      toast.error(error,"Image upload error!");
-    } finally {
-      setUploading(false);
-    }
-  };
-
- 
   const handleRemoveImage = () => {
     setImageUrl("");
-    toast.info(" Image removed");
+    toast.info("Image removed");
   };
 
   return (
-    <div className="max-w-lg mx-auto mt-10 bg-white p-6 rounded-lg shadow-md border border-gray-100">
-      <h2 className="text-2xl font-semibold text-center mb-6 text-blue-700">
-         Add a New Habit
+    <div className="max-w-lg mx-auto bg-gray-100 p-6 rounded-lg shadow-md border border-gray-100">
+      <h2 className="text-3xl font-bold text-blue-700 mb-8 text-center">
+        Add a New Habit
       </h2>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        
+      <form onSubmit={handleSubmit} className="space-y-4 ">
+    
         <div>
           <label className="block mb-1 font-medium">Habit Title</label>
           <input
             type="text"
             name="title"
             required
-            placeholder="e.g., Morning Exercise"
+            placeholder="Type habit title.. "
             className="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200 outline-none"
           />
         </div>
@@ -115,6 +120,7 @@ const AddHabit = () => {
             className="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200 outline-none"
           ></textarea>
         </div>
+
         <div>
           <label className="block mb-1 font-medium">Category</label>
           <select
@@ -130,6 +136,7 @@ const AddHabit = () => {
             <option value="Study">Study</option>
           </select>
         </div>
+
         <div>
           <label className="block mb-1 font-medium">Reminder Time</label>
           <input
@@ -139,7 +146,7 @@ const AddHabit = () => {
             className="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200 outline-none"
           />
         </div>
-        
+
         <div>
           <label className="block mb-1 font-medium">Upload Image (optional)</label>
           <div className="flex items-center gap-3">
@@ -148,7 +155,7 @@ const AddHabit = () => {
               accept="image/*"
               onChange={handleImageUpload}
               disabled={uploading}
-              className="w-full"
+              className="border w-32"
             />
             {uploading && <span className="text-sm text-blue-500">Uploading...</span>}
           </div>
