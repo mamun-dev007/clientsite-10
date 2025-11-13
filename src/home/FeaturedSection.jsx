@@ -24,6 +24,9 @@ const FeaturedSection = () => {
 
   return (
     <div className="max-w-7xl mx-auto  py-10">
+    <div className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
+</div>
+
       
 <motion.section
       initial={{ opacity: 0, y: 50 }}
@@ -32,6 +35,8 @@ const FeaturedSection = () => {
       viewport={{ once: true }}
       className=" text-center"
     >
+
+
       <h2 className="text-3xl font-bold text-blue-700 mb-8 text-center">
          Featured Habits
       </h2>

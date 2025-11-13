@@ -1,12 +1,13 @@
 import { Link, NavLink } from "react-router-dom";
 import { useContext, useState } from "react";
 import { AuthContext } from "../context/AuthContext";
-import { Menu, X } from "lucide-react";
+import { Menu, Moon, Sun, X } from "lucide-react";
 
 const Navbar = () => {
   const { user, logOut } = useContext(AuthContext);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+   const { theme, toggleTheme } = useContext(AuthContext);
 
   const handleLogout = () => {
     logOut();
@@ -14,34 +15,37 @@ const Navbar = () => {
     setMenuOpen(false);
   };
 
+  
+
   const navLinks = (
     <>
-      <NavLink to="/" className="block px-3 py-2 hover:text-blue-600">
+      <NavLink to="/" className="dark:text-black block px-3 py-2 hover:text-blue-600">
         Home
       </NavLink>
 
       {user && (
         <>
-          <NavLink to="/add-habit" className="block px-3 py-2 hover:text-blue-600">
+          <NavLink to="/add-habit" className="dark:text-black block px-3 py-2 hover:text-blue-600">
             Add Habit
           </NavLink>
-          <NavLink to="/my-habits" className="block px-3 py-2 hover:text-blue-600 ">
+          <NavLink to="/my-habits" className="dark:text-black block px-3 py-2 hover:text-blue-600 ">
             My Habits
           </NavLink>
         </>
       )}
 
-      <NavLink to="/publichabit" className="block px-3 py-2 hover:text-blue-600">
+      <NavLink to="/publichabit" className="dark:text-black block px-3 py-2 hover:text-blue-600">
         Public Habits
       </NavLink>
-      <NavLink to="/dashboard" className="block px-3 py-2 hover:text-blue-600">
+      <NavLink to="/dashboard" className="dark:text-black block px-3 py-2 hover:text-blue-600">
         Dashboard
       </NavLink>
+      
     </>
   );
 
   return (
-    <header className="bg-white shadow-sm sticky top-0 z-50">
+    <header className="bg-white  shadow-sm sticky top-0 z-50">
       <nav className="max-w-7xl mx-auto flex items-center justify-between px-6 py-3">
         
         <Link to="/" className="text-2xl font-bold text-blue-700">

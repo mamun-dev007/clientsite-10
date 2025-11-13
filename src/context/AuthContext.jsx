@@ -15,6 +15,7 @@ const googleProvider = new GoogleAuthProvider();
 export const AuthProvider = ({children}) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [theme, setTheme] = useState(localStorage.getItem("theme") || "light");
 
    const signUp = (email, password) => createUserWithEmailAndPassword(auth, email, password);
   const logIn = (email, password) => signInWithEmailAndPassword(auth, email, password);
@@ -23,6 +24,8 @@ export const AuthProvider = ({children}) => {
     return updateProfile(auth.currentUser, Profile );
   }
   const logOut = () => signOut(auth);
+
+  
 
   useEffect(()=> {
     const unsub = onAuthStateChanged(auth, async(currentUser) => {
@@ -54,7 +57,24 @@ setLoading(false);
     return ()=> unsub();
   },[]);
 
-  const value = { user,  signUp, logIn, googleLogin, logOut, updateUserProfile };
+
+   useEffect(() => {
+    const root = window.document.documentElement;
+    if (theme === "dark") {
+      root.classList.add("dark");
+    } else {
+      root.classList.remove("dark");
+    }
+    localStorage.setItem("theme", theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(theme === "light" ? "dark" : "light");
+  };
+
+
+
+  const value = { user,  signUp, logIn, googleLogin, logOut, updateUserProfile, theme, toggleTheme };
  if (loading) {
     return <Loading />;
   }
