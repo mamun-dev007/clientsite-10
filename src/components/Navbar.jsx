@@ -34,6 +34,9 @@ const Navbar = () => {
       <NavLink to="/publichabit" className="block px-3 py-2 hover:text-blue-600">
         Public Habits
       </NavLink>
+      <NavLink to="/dashboard" className="block px-3 py-2 hover:text-blue-600">
+        Dashboard
+      </NavLink>
     </>
   );
 

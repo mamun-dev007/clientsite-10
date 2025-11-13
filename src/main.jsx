@@ -15,6 +15,7 @@ import { AuthProvider } from "./context/AuthContext.jsx"
 import PublicHabit from "./routes/PublicHabit.jsx";
 import UpdateHabit from "./routes/UpdateHabit.jsx";
 import PublicHabits from "./routes/PublicHabit.jsx";
+import Dashboard from "./components/Dashboard.jsx";
 
 const router = createBrowserRouter([
   {
@@ -67,6 +68,10 @@ const router = createBrowserRouter([
       {
        path: "/public-habits",
         element: <PublicHabits />,
+      },
+      {
+       path: "/dashboard",
+        element: <Dashboard></Dashboard>
       },
      
     ],
