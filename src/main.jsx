@@ -1,8 +1,9 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { createBrowserRouter, RouterProvider } from "react-router";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import App from "./App.jsx";
 import "./index.css";
+
 import Home from "./routes/Home.jsx";
 import AddHabit from "./routes/AddHabit.jsx";
 import MyHabits from "./routes/MyHabits.jsx";
@@ -10,21 +11,20 @@ import HabitDetails from "./routes/HabitDetails.jsx";
 import Login from "./routes/Login.jsx";
 import Register from "./routes/Register.jsx";
 import NotFound from "./routes/NotFound.jsx";
+
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
-import { AuthProvider } from "./context/AuthContext.jsx"
-import PublicHabit from "./routes/PublicHabit.jsx";
+import { AuthProvider } from "./context/AuthContext.jsx";
 import UpdateHabit from "./routes/UpdateHabit.jsx";
-import PublicHabits from "./routes/PublicHabit.jsx";
 import Dashboard from "./components/Dashboard.jsx";
+import PublicHabits from "./routes/PublicHabit.jsx";
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <App />,
     children: [
-      { index: true, 
-        element: <Home /> 
-      },
+      { index: true, element: <Home /> },
+
       {
         path: "/add-habit",
         element: (
@@ -33,6 +33,7 @@ const router = createBrowserRouter([
           </ProtectedRoute>
         ),
       },
+
       {
         path: "/my-habits",
         element: (
@@ -42,38 +43,29 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: "/publichabit",
-        element:<PublicHabit></PublicHabit>
+        path: "/PublicHabit",
+        element: <PublicHabits />, 
       },
       {
-        path: "habit-details/:id",
+        path: "/habit-details/:id",
+        element: <HabitDetails />, 
+      },
+
+      { path: "/login", element: <Login /> },
+      { path: "/register", element: <Register /> },
+
+      {
+        path: "/updatehabit/:id",
         element: (
           <ProtectedRoute>
-            <HabitDetails />
+            <UpdateHabit />
           </ProtectedRoute>
         ),
       },
-      { path: "login", 
-        element: <Login /> 
-      },
-      { path: "register", 
-        element: <Register /> 
-      },
-      { path: "/updatehabit/:id", 
-        element: <UpdateHabit></UpdateHabit>
-      },
-      { path: "*", 
-        element: <NotFound /> 
-      },
-      {
-       path: "/public-habits",
-        element: <PublicHabits />,
-      },
-      {
-       path: "/dashboard",
-        element: <Dashboard></Dashboard>
-      },
-     
+
+      { path: "dashboard", element: <Dashboard /> },
+
+      { path: "*", element: <NotFound /> },
     ],
   },
 ]);

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { toast } from "react-toastify";
+import api from "../axios";
 
 const HabitDetails = () => {
   const { id } = useParams();
@@ -10,16 +11,24 @@ const HabitDetails = () => {
   const today = new Date().toISOString().split("T")[0];
 
   useEffect(() => {
-    const storedProgress = JSON.parse(localStorage.getItem("habitProgress") || "{}");
-    const storedHabits = JSON.parse(localStorage.getItem("completedHabits") || "{}");
+    const storedProgress = JSON.parse(
+      localStorage.getItem("habitProgress") || "{}"
+    );
+    const storedHabits = JSON.parse(
+      localStorage.getItem("completedHabits") || "{}"
+    );
 
-    fetch(`http://localhost:3000/api/habits/${id}`)
+    fetch(
+      `https://backend-10-lime.vercel.app/api/habits/${id}`
+    )
       .then((res) => res.json())
       .then((data) => {
+        // Attach streak & completion history if stored locally
         if (storedProgress[id]) {
           data.streak = storedProgress[id].streak;
           data.completionHistory = storedProgress[id].completionHistory;
         }
+
         setHabit(data);
       })
       .finally(() => setLoading(false));
@@ -36,12 +45,13 @@ const HabitDetails = () => {
     }
 
     try {
-      const res = await fetch(`http://localhost:3000/api/habits/complete/${id}`, {
-        method: "PATCH",
-      });
-      const data = await res.json();
+      const res = await api.patch(
+        `/habits/complete/${id}`
+      );
 
-      if (data.modifiedCount > 0) {
+      const data = res.data;
+
+      if (data.modifiedCount > 0 || data.success) {
         toast.success("Habit marked complete for today!");
 
         const updatedHabit = {
@@ -53,26 +63,35 @@ const HabitDetails = () => {
         setHabit(updatedHabit);
         setCompletedToday(true);
 
-        const storedProgress = JSON.parse(localStorage.getItem("habitProgress") || "{}");
+        // Store progress locally
+        const storedProgress = JSON.parse(
+          localStorage.getItem("habitProgress") || "{}"
+        );
         storedProgress[id] = {
           streak: updatedHabit.streak,
           completionHistory: updatedHabit.completionHistory,
         };
         localStorage.setItem("habitProgress", JSON.stringify(storedProgress));
 
-        const storedHabits = JSON.parse(localStorage.getItem("completedHabits") || "{}");
+        // Store today's completion
+        const storedHabits = JSON.parse(
+          localStorage.getItem("completedHabits") || "{}"
+        );
         storedHabits[id] = today;
         localStorage.setItem("completedHabits", JSON.stringify(storedHabits));
       } else {
         toast.info("Already marked complete today!");
       }
     } catch (err) {
-      toast.error(err,"Failed to mark complete!");
+      toast.error("Failed to mark as complete!");
     }
   };
 
-  if (loading) return <p className="text-center mt-10">Loading habit details...</p>;
-  if (!habit) return <p className="text-center text-red-500 mt-10">Habit not found!</p>;
+  if (loading)
+    return <p className="text-center mt-10">Loading habit details...</p>;
+
+  if (!habit)
+    return <p className="text-center text-red-500 mt-10">Habit not found!</p>;
 
   const last30Days = Array.from({ length: 30 }, (_, i) => {
     const d = new Date();
@@ -82,6 +101,7 @@ const HabitDetails = () => {
 
   const completedDays =
     habit.completionHistory?.filter((d) => last30Days.includes(d)).length || 0;
+
   const progress = Math.round((completedDays / 30) * 100);
 
   return (
@@ -91,9 +111,11 @@ const HabitDetails = () => {
         alt={habit.title}
         className="w-11/12 mx-auto mt-5 rounded-t-2xl h-64 object-cover"
       />
+
       <div className="p-6">
         <div className="flex justify-between items-center mb-3">
           <h2 className="text-2xl font-bold text-blue-700">{habit.title}</h2>
+
           <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-medium">
             🔥 Streak: {habit.streak || 0}
           </span>
@@ -103,8 +125,9 @@ const HabitDetails = () => {
         <p className="text-sm text-gray-500 mb-1">
           🏷 Category: <span className="font-medium">{habit.category}</span>
         </p>
+
         <p className="text-sm text-gray-500 mb-3">
-          👤 Creator: {habit.creatorName || "Unknown"}
+          👤 Creator: {habit.userName || "Unknown"}
         </p>
 
         <div className="mb-4">
@@ -117,6 +140,7 @@ const HabitDetails = () => {
               style={{ width: `${progress}%` }}
             ></div>
           </div>
+
           <p className="text-sm text-gray-600 mt-1">
             {progress}% completed
             {progress === 100 && " 🎉 Goal Achieved!"}
@@ -133,7 +157,7 @@ const HabitDetails = () => {
           }`}
         >
           {completedToday
-            ? "Already Completed Today "
+            ? "Already Completed Today"
             : progress === 100
             ? "All Done! 🎯"
             : "Mark Complete"}

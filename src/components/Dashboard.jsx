@@ -8,6 +8,7 @@ const Dashboard = () => {
   useEffect(() => {
     const storedProgress = JSON.parse(localStorage.getItem("habitProgress")) || {};
     const chartData = Object.entries(storedProgress).map(([habitId, data]) => ({
+      
       name: habitId.slice(0, 6) + "...",
       streak: data.streak || 0,
       completions: data.completionHistory?.length || 0,

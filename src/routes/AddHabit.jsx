@@ -1,6 +1,7 @@
 import React, { useContext, useState } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { toast } from "react-toastify";
+import api from "../axios";
 
 const AddHabit = () => {
   const { user } = useContext(AuthContext);
@@ -8,11 +9,14 @@ const AddHabit = () => {
   const [imageUrl, setImageUrl] = useState("");
   const [uploading, setUploading] = useState(false);
 
+  const API_URL = import.meta.env.VITE_API_URL;
+
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
     setUploading(true);
+
     const formData = new FormData();
     formData.append("image", file);
 
@@ -28,15 +32,13 @@ const AddHabit = () => {
       const json = await res.json();
 
       if (json.success) {
-        const imageUrl = json.data.display_url;
-        setImageUrl(imageUrl);
+        setImageUrl(json.data.display_url);
         toast.success("Image uploaded successfully!");
       } else {
-        console.error("imgbb upload failed:", json);
         toast.error("Image upload failed!");
       }
     } catch (err) {
-      console.error("Upload error:", err);
+      console.error(err);
       toast.error("Image upload error!");
     } finally {
       setUploading(false);
@@ -48,44 +50,37 @@ const AddHabit = () => {
     setLoading(true);
 
     const form = e.target;
-    const title = form.title.value;
-    const description = form.description.value;
-    const category = form.category.value;
-    const reminderTime = form.reminderTime.value;
 
     const habitData = {
-      title,
-      description,
-      category,
-      reminderTime,
+      title: form.title.value,
+      description: form.description.value,
+      category: form.category.value,
+      reminderTime: form.reminderTime.value,
       image: imageUrl,
       userEmail: user?.email,
       userName: user?.displayName,
       isPublic: true,
+      createdAt: new Date(),
+      streak: 0,
     };
 
     try {
-      const res = await fetch(`http://localhost:3000/api/habits`, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify(habitData),
-      });
+  const res = await api.post("/habits", habitData);
 
-      const data = await res.json();
-      if (data.insertedId) {
-        toast.success("Habit added successfully!");
-        form.reset();
-        setImageUrl("");
-      } else {
-        toast.error("Failed to add habit!");
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error("Something went wrong!");
-    } finally {
-      setLoading(false);
-    }
-  };
+  if (res.data.acknowledged) {
+    toast.success("Habit added successfully!");
+    form.reset();
+    setImageUrl("");
+  } else {
+    toast.error("Failed to add habit!");
+  }
+} catch (err) {
+  console.error(err);
+  toast.error("Something went wrong!");
+} finally {
+  setLoading(false);
+}
+}
 
   const handleRemoveImage = () => {
     setImageUrl("");
@@ -98,26 +93,24 @@ const AddHabit = () => {
         Add a New Habit
       </h2>
 
-      <form onSubmit={handleSubmit} className="space-y-4 ">
-    
+      <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="block mb-1 font-medium">Habit Title</label>
           <input
             type="text"
             name="title"
             required
-            placeholder="Type habit title.. "
-            className="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200 outline-none"
+            className="w-full border rounded px-3 py-2"
           />
         </div>
+
         <div>
           <label className="block mb-1 font-medium">Description</label>
           <textarea
             name="description"
-            required
             rows="3"
-            placeholder="Describe your habit..."
-            className="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200 outline-none"
+            required
+            className="w-full border rounded px-3 py-2"
           ></textarea>
         </div>
 
@@ -126,7 +119,7 @@ const AddHabit = () => {
           <select
             name="category"
             required
-            className="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200 outline-none"
+            className="w-full border rounded px-3 py-2"
           >
             <option value="">Select Category</option>
             <option value="Morning">Morning</option>
@@ -143,12 +136,15 @@ const AddHabit = () => {
             type="time"
             name="reminderTime"
             required
-            className="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200 outline-none"
+            className="w-full border rounded px-3 py-2"
           />
         </div>
 
         <div>
-          <label className="block mb-1 font-medium">Upload Image (optional)</label>
+          <label className="block mb-1 font-medium">
+            Upload Image (optional)
+          </label>
+
           <div className="flex items-center gap-3">
             <input
               type="file"
@@ -157,7 +153,9 @@ const AddHabit = () => {
               disabled={uploading}
               className="border w-32"
             />
-            {uploading && <span className="text-sm text-blue-500">Uploading...</span>}
+            {uploading && (
+              <span className="text-sm text-blue-500">Uploading...</span>
+            )}
           </div>
 
           {imageUrl && (

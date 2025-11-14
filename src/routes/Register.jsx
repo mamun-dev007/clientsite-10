@@ -41,7 +41,7 @@ const Register = () => {
           await updateUserProfile(name || undefined, photo || undefined);
         }
         setLoading(false);
-        navigate("/login", { replace: true });
+        navigate("/", { replace: true });
         toast.success("Login successful!");
 
       }

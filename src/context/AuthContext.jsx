@@ -1,70 +1,60 @@
-import React, { createContext, useEffect, useState } from 'react';
-
-import app from '../firebase.config';
-import { getAuth, onAuthStateChanged, signOut ,signInWithEmailAndPassword,
-    createUserWithEmailAndPassword,
-    signInWithPopup,
-    GoogleAuthProvider,
-    updateProfile} from 'firebase/auth';
-import Loading from '../components/Loading';
+import React, { createContext, useEffect, useState } from "react";
+import app from "../firebase.config";
+import {
+  getAuth,
+  onAuthStateChanged,
+  signOut,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signInWithPopup,
+  GoogleAuthProvider,
+  updateProfile,
+} from "firebase/auth";
+import Loading from "../components/Loading";
 
 export const AuthContext = createContext();
 const auth = getAuth(app);
 const googleProvider = new GoogleAuthProvider();
 
-export const AuthProvider = ({children}) => {
+export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [theme, setTheme] = useState(localStorage.getItem("theme") || "light");
 
-   const signUp = (email, password) => createUserWithEmailAndPassword(auth, email, password);
-  const logIn = (email, password) => signInWithEmailAndPassword(auth, email, password);
+  const signUp = (email, password) =>
+    createUserWithEmailAndPassword(auth, email, password);
+
+  const logIn = (email, password) =>
+    signInWithEmailAndPassword(auth, email, password);
+
   const googleLogin = () => signInWithPopup(auth, googleProvider);
-  const updateUserProfile = (Profile) =>{
-    return updateProfile(auth.currentUser, Profile );
-  }
+
+  const updateUserProfile = async (profile) => {
+    try {
+      return await updateProfile(auth.currentUser, profile);
+    } catch (err) {
+      console.error("Update Profile Error:", err);
+    }
+  };
+
   const logOut = () => signOut(auth);
 
-  
-
-  useEffect(()=> {
-    const unsub = onAuthStateChanged(auth, async(currentUser) => {
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
+      setLoading(false);
+    });
 
-      if (currentUser) {
-        const loggeds = { email: currentUser.email}
-  try {
-    const res = await fetch("http://localhost:3000/token", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(loggeds),
-    })
-    .then(res=>res.json())
-    .then(data => {
-      console.log('hello token',data.token)
-      localStorage.setItem("access-token", data.token);
-    })  
-  } catch (error) {
-    console.error("JWT fetch failed:", error);
-  }
-} else {
-  localStorage.removeItem("access-token");
-}
+    return () => unsub();
+  }, []);
 
-setLoading(false);
-});
+  // Dark Mode
+  useEffect(() => {
+    const root = document.documentElement;
+    theme === "dark"
+      ? root.classList.add("dark")
+      : root.classList.remove("dark");
 
-    return ()=> unsub();
-  },[]);
-
-
-   useEffect(() => {
-    const root = window.document.documentElement;
-    if (theme === "dark") {
-      root.classList.add("dark");
-    } else {
-      root.classList.remove("dark");
-    }
     localStorage.setItem("theme", theme);
   }, [theme]);
 
@@ -72,15 +62,22 @@ setLoading(false);
     setTheme(theme === "light" ? "dark" : "light");
   };
 
+  if (loading) return <Loading />;
 
+  const value = {
+    user,
+    loading,
+    signUp,
+    logIn,
+    googleLogin,
+    logOut,
+    updateUserProfile,
+    theme,
+    toggleTheme,
+  };
 
-  const value = { user,  signUp, logIn, googleLogin, logOut, updateUserProfile, theme, toggleTheme };
- if (loading) {
-    return <Loading />;
-  }
   return (
-    <AuthContext.Provider value={ value }>
-      
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
