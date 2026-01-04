@@ -19,10 +19,20 @@ const googleProvider = new GoogleAuthProvider();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [theme, setTheme] = useState(localStorage.getItem("theme") || "light");
+ 
+const [theme, setTheme] = useState(
+    localStorage.getItem("theme") || "light"
+  );
+ const registerUser = async (email, password, name, image) => {
+  const result = await createUserWithEmailAndPassword(auth, email, password);
 
-  const signUp = (email, password) =>
-    createUserWithEmailAndPassword(auth, email, password);
+  await updateProfile(result.user, {
+    displayName: name,
+    photoURL: image,
+  });
+
+  return result;
+};
 
   const logIn = (email, password) =>
     signInWithEmailAndPassword(auth, email, password);
@@ -49,17 +59,22 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   // Dark Mode
-  useEffect(() => {
-    const root = document.documentElement;
-    theme === "dark"
-      ? root.classList.add("dark")
-      : root.classList.remove("dark");
+
+    useEffect(() => {
+    const html = document.documentElement;
+
+    if (theme === "dark") {
+      html.classList.add("dark");
+    } else {
+      html.classList.remove("dark");
+    }
 
     localStorage.setItem("theme", theme);
   }, [theme]);
 
+  /* ================= TOGGLE ================= */
   const toggleTheme = () => {
-    setTheme(theme === "light" ? "dark" : "light");
+    setTheme((prev) => (prev === "dark" ? "light" : "dark"));
   };
 
   if (loading) return <Loading />;
@@ -67,7 +82,7 @@ export const AuthProvider = ({ children }) => {
   const value = {
     user,
     loading,
-    signUp,
+    registerUser,
     logIn,
     googleLogin,
     logOut,

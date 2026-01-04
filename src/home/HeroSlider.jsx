@@ -1,15 +1,17 @@
-import React, { useState } from 'react';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { Autoplay, Pagination } from 'swiper/modules';
-import 'swiper/css';
-import 'swiper/css/pagination';
+import React, { useState } from "react";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Autoplay, Pagination } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/pagination";
 import { Typewriter } from "react-simple-typewriter";
+import { FaArrowDown } from "react-icons/fa";
+import { Link } from "react-router-dom";
 
 const slides = [
   {
     title: "Build Habits, Build Life",
     description: "Small steps every day lead to massive results.",
-    image: "https://images.unsplash.com/photo-1564510714747-69c3bc1fab41?q=80&w=870&auto=format&fit=crop",
+    image: "https://images.unsplash.com/photo-1564510714747-69c3bc1fab41?q=80&w=1600&auto=format&fit=crop",
   },
   {
     title: "Track Your Progress",
@@ -30,22 +32,24 @@ const HeroSlider = () => {
     <Swiper
       modules={[Pagination, Autoplay]}
       pagination={{ clickable: true }}
-      autoplay={{ delay: 4000 }}
-      loop={true}
+      autoplay={{ delay: 4000, disableOnInteraction: false }}
+      loop
       onSlideChange={(swiper) => setActiveIndex(swiper.realIndex)}
+      className="relative"
     >
       {slides.map((slide, index) => (
         <SwiperSlide key={index}>
           <div
-            className="max-w-7xl mx-auto  h-64 md:h-96 flex flex-col items-center justify-center text-white text-center bg-cover bg-center relative"
-            style={{
-              backgroundImage: `url(${slide.image})`,
-            }}
+            className="h-[60vh] md:h-[70vh] flex flex-col items-center justify-center
+                       text-white text-center bg-cover bg-center relative"
+            style={{ backgroundImage: `url(${slide.image})` }}
           >
-            <div className="absolute inset-0 bg-black/50"></div>
+            {/* Overlay */}
+            <div className="absolute inset-0 bg-black/60"></div>
 
-            <div className="relative z-10">
-              <h2 className="text-3xl md:text-5xl font-bold mb-3">
+            {/* Content */}
+            <div className="relative z-10 max-w-3xl px-4">
+              <h2 className="text-3xl md:text-5xl font-bold mb-4">
                 {activeIndex === index ? (
                   <Typewriter
                     words={[slide.title]}
@@ -57,10 +61,39 @@ const HeroSlider = () => {
                     delaySpeed={1500}
                   />
                 ) : (
-                  <span>{slide.title}</span>
+                  slide.title
                 )}
               </h2>
-              <p className="text-lg md:text-xl">{slide.description}</p>
+
+              <p className="text-lg md:text-xl mb-6">
+                {slide.description}
+              </p>
+
+              {/* CTA Buttons */}
+              <div className="flex justify-center gap-4">
+                <Link
+                  to="/add-habit"
+                  className="px-6 py-3 bg-blue-600 hover:bg-blue-700
+                             rounded-md font-semibold transition"
+                >
+                  Get Started
+                </Link>
+
+                <Link
+                  to="/publichabit"
+                  className="px-6 py-3 border border-white
+                             hover:bg-white hover:text-black
+                             rounded-md font-semibold transition"
+                >
+                  Explore Habits
+                </Link>
+              </div>
+            </div>
+
+            {/* Scroll Indicator */}
+            <div className="absolute bottom-6 left-1/2 -translate-x-1/2
+                            animate-bounce text-white/80">
+              <FaArrowDown size={22} />
             </div>
           </div>
         </SwiperSlide>

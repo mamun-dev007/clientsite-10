@@ -48,25 +48,57 @@ const benefits = [
 ];
 
 const WhyBuildHabits  = () => (
-  <section className="bg-gray-50 py-10">
-  <motion.section
-      initial={{ opacity: 0, y: 50 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.8, ease: "easeOut" }}
-      viewport={{ once: true }}
-      className=" text-center"
-    >
-    <h2 className="text-3xl font-bold text-blue-700 mb-8 text-center">Why Build Habits?</h2>
-    <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 px-5 xl:px-0 gap-6">
-      {benefits.map((b, i) => (
-        <div key={i} className="bg-white p-6 rounded shadow text-center">
-          <div className="mb-4 text-blue-600 justify-center flex">{b.icon}</div>
-          <h3 className="font-semibold mb-2">{b.title}</h3>
-          <p className="text-gray-600">{b.desc}</p>
+   <section className="py-16 bg-white dark:bg-gray-900">
+      <div className="max-w-7xl mx-auto px-5 xl:px-0">
+
+        {/* Section Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true }}
+          className="text-center mb-12"
+        >
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">
+            How It Works
+          </h2>
+          <p className="mt-3 text-gray-600 dark:text-gray-400 max-w-xl mx-auto">
+            Build better habits in just four simple steps
+          </p>
+        </motion.div>
+
+        {/* Steps */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {benefits.map((step, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.15 }}
+              viewport={{ once: true }}
+              className="relative bg-gray-50 dark:bg-gray-800
+                         border border-gray-200 dark:border-gray-800
+                         rounded-xl p-6 text-center"
+            >
+              
+
+              {/* Icon */}
+              <div className="mb-4 flex justify-center text-blue-600 dark:text-blue-400">
+                {step.icon}
+              </div>
+
+              {/* Content */}
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">
+                {step.title}
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400 text-sm">
+                {step.desc}
+              </p>
+            </motion.div>
+          ))}
         </div>
-      ))}
-    </div></motion.section>
-  </section>
+      </div>
+    </section>
 );
 
 export default WhyBuildHabits;

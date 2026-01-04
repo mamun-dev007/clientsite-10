@@ -1,22 +1,28 @@
-import React, { useContext, useState } from "react";
+import { useContext, useState } from "react";
+import { useForm } from "react-hook-form";
 import { AuthContext } from "../context/AuthContext";
 import { toast } from "react-toastify";
 import api from "../axios";
 
 const AddHabit = () => {
   const { user } = useContext(AuthContext);
-  const [loading, setLoading] = useState(false);
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm();
+
   const [imageUrl, setImageUrl] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const API_URL = import.meta.env.VITE_API_URL;
-
+  /* ================= IMAGE UPLOAD ================= */
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
     setUploading(true);
-
     const formData = new FormData();
     formData.append("image", file);
 
@@ -28,34 +34,35 @@ const AddHabit = () => {
           body: formData,
         }
       );
+      const data = await res.json();
 
-      const json = await res.json();
-
-      if (json.success) {
-        setImageUrl(json.data.display_url);
-        toast.success("Image uploaded successfully!");
+      if (data.success) {
+        setImageUrl(data.data.display_url);
+        toast.success("Image uploaded!");
       } else {
-        toast.error("Image upload failed!");
+        toast.error("Image upload failed");
       }
-    } catch (err) {
-      console.error(err);
-      toast.error("Image upload error!");
+    } catch {
+      toast.error("Image upload error");
     } finally {
       setUploading(false);
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const removeImage = () => {
+    setImageUrl("");
+    toast.info("Image removed");
+  };
+
+  /* ================= SUBMIT ================= */
+  const onSubmit = async (data) => {
     setLoading(true);
 
-    const form = e.target;
-
     const habitData = {
-      title: form.title.value,
-      description: form.description.value,
-      category: form.category.value,
-      reminderTime: form.reminderTime.value,
+      title: data.title,
+      description: data.description,
+      category: data.category,
+      reminderTime: data.reminderTime,
       image: imageUrl,
       userEmail: user?.email,
       userName: user?.displayName,
@@ -65,109 +72,140 @@ const AddHabit = () => {
     };
 
     try {
-  const res = await api.post("/habits", habitData);
-
-  if (res.data.acknowledged) {
-    toast.success("Habit added successfully!");
-    form.reset();
-    setImageUrl("");
-  } else {
-    toast.error("Failed to add habit!");
-  }
-} catch (err) {
-  console.error(err);
-  toast.error("Something went wrong!");
-} finally {
-  setLoading(false);
-}
-}
-
-  const handleRemoveImage = () => {
-    setImageUrl("");
-    toast.info("Image removed");
+      const res = await api.post("/habits", habitData);
+      if (res.data.acknowledged) {
+        toast.success("Habit added successfully!");
+        reset();
+        setImageUrl("");
+      } else {
+        toast.error("Failed to add habit");
+      }
+    } catch {
+      toast.error("Something went wrong");
+    } finally {
+      setLoading(false);
+    }
   };
 
+  const inputClass =
+    "w-full px-3 py-2 rounded-md bg-blue-900/10 text-white border border-white/10 focus:outline-none focus:ring-2 focus:ring-[#255f85]";
+
   return (
-    <div className="max-w-lg mx-auto bg-gray-100 p-6 rounded-lg shadow-md border border-gray-100">
-      <h2 className="text-3xl font-bold text-blue-700 mb-8 text-center">
-        Add a New Habit
+    <div className="bg-gray-900 max-h-screen py-20">
+      
+       <div className="max-w-lg mx-auto bg-gray-800 p-6 rounded-xl shadow border border-white/10">
+        <h2 className="text-3xl font-bold text-center mb-8 text-blue-500">
+        Add New Habit
       </h2>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Habit Title */}
         <div>
-          <label className="block mb-1 font-medium">Habit Title</label>
+          <label className="text-sm font-medium text-gray-300">
+            Habit Title
+          </label>
           <input
-            type="text"
-            name="title"
-            required
-            className="w-full border rounded px-3 py-2"
+            {...register("title", { required: "Title is required" })}
+            className={inputClass}
           />
+          {errors.title && (
+            <p className="text-red-500 text-sm">{errors.title.message}</p>
+          )}
         </div>
 
+        {/* Description */}
         <div>
-          <label className="block mb-1 font-medium">Description</label>
+          <label className="text-sm font-medium text-gray-300">
+            Description
+          </label>
           <textarea
-            name="description"
             rows="3"
-            required
-            className="w-full border rounded px-3 py-2"
-          ></textarea>
+            {...register("description", { required: "Description required" })}
+            className={inputClass}
+          />
+          {errors.description && (
+            <p className="text-red-500 text-sm">
+              {errors.description.message}
+            </p>
+          )}
         </div>
 
+        {/* Category */}
         <div>
-          <label className="block mb-1 font-medium">Category</label>
+          <label className="text-sm font-medium text-gray-300">
+            Category
+          </label>
           <select
-            name="category"
-            required
-            className="w-full border rounded px-3 py-2"
+            {...register("category", { required: "Select a category" })}
+            className={inputClass}
           >
-            <option value="">Select Category</option>
-            <option value="Morning">Morning</option>
-            <option value="Work">Work</option>
-            <option value="Fitness">Fitness</option>
-            <option value="Evening">Evening</option>
-            <option value="Study">Study</option>
+            <option value="" className="bg-blue-900/10 text-gray-400">
+              Select Category
+            </option>
+            <option value="Morning" className="bg-[#020817] text-white">
+              Morning
+            </option>
+            <option value="Work" className="bg-[#020817] text-white">
+              Work
+            </option>
+            <option value="Fitness" className="bg-[#020817] text-white">
+              Fitness
+            </option>
+            <option value="Evening" className="bg-[#020817] text-white">
+              Evening
+            </option>
+            <option value="Study" className="bg-[#020817] text-white">
+              Study
+            </option>
           </select>
+          {errors.category && (
+            <p className="text-red-500 text-sm">{errors.category.message}</p>
+          )}
         </div>
 
+        {/* Reminder Time */}
         <div>
-          <label className="block mb-1 font-medium">Reminder Time</label>
+          <label className="text-sm font-medium text-gray-300">
+            Reminder Time
+          </label>
           <input
             type="time"
-            name="reminderTime"
-            required
-            className="w-full border rounded px-3 py-2"
+            {...register("reminderTime", { required: "Time required" })}
+            className={inputClass}
           />
         </div>
 
+        {/* Image Upload */}
         <div>
-          <label className="block mb-1 font-medium">
+          <label className="text-sm font-medium text-gray-300">
             Upload Image (optional)
           </label>
-
-          <div className="flex items-center gap-3">
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleImageUpload}
-              disabled={uploading}
-              className="border w-32"
-            />
-            {uploading && (
-              <span className="text-sm text-blue-500">Uploading...</span>
-            )}
-          </div>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleImageUpload}
+            disabled={uploading}
+            className="
+              text-sm text-gray-300
+              file:bg-[#255f85] file:text-white
+              file:border-0 file:px-3 file:py-1
+              file:rounded-md file:cursor-pointer
+            "
+          />
+          {uploading && (
+            <p className="text-sm text-blue-400 mt-1">Uploading...</p>
+          )}
 
           {imageUrl && (
-            <div className="mt-3 relative inline-block">
+            <div className="mt-3 relative w-32">
               <img
                 src={imageUrl}
-                alt="Preview"
-                className="w-32 h-32 object-cover rounded border"
+                alt="preview"
+                className="w-32 h-32 rounded object-cover border border-white/10"
               />
               <button
                 type="button"
-                onClick={handleRemoveImage}
+                onClick={removeImage}
                 className="absolute -top-2 -right-2 bg-red-600 text-white text-xs px-2 py-1 rounded-full"
               >
                 ✕
@@ -176,33 +214,39 @@ const AddHabit = () => {
           )}
         </div>
 
-        <div className="flex flex-col gap-2">
+        {/* User Info */}
+        <div className="space-y-2">
           <input
-            type="text"
             value={user?.displayName || ""}
             readOnly
-            className="w-full border rounded px-3 py-2 bg-gray-100"
+            className={`${inputClass} bg-gray-800`}
           />
           <input
-            type="email"
             value={user?.email || ""}
             readOnly
-            className="w-full border rounded px-3 py-2 bg-gray-100"
+            className={`${inputClass} bg-gray-800`}
           />
         </div>
 
+        {/* Submit */}
         <button
           type="submit"
           disabled={loading}
-          className={`w-full py-2 rounded-md text-white transition ${
-            loading
-              ? "bg-blue-400 cursor-not-allowed"
-              : "bg-blue-600 hover:bg-blue-700"
-          }`}
+          className="
+            w-full py-2 rounded-md text-white transition
+            bg-gradient-to-r from-[#255f85] to-[#1f4f6d]
+            hover:from-[#133247] hover:to-[#133c55]
+            disabled:opacity-60
+          "
         >
           {loading ? "Adding..." : "Add Habit"}
         </button>
       </form>
+      </div>
+
+      
+
+      
     </div>
   );
 };

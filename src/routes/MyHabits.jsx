@@ -1,8 +1,9 @@
 import React, { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { toast } from "react-toastify";
-import { useNavigate } from "react-router";
+import { useNavigate } from "react-router-dom";
 import api from "../axios";
+import Loading from "../components/Loading";
 
 const MyHabits = () => {
   const { user } = useContext(AuthContext);
@@ -13,9 +14,8 @@ const MyHabits = () => {
   const navigate = useNavigate();
   const today = new Date().toISOString().split("T")[0];
 
-  const getCompletedToday = () => {
-    return JSON.parse(localStorage.getItem("completedHabits") || "{}");
-  };
+  const getCompletedToday = () =>
+    JSON.parse(localStorage.getItem("completedHabits") || "{}");
 
   useEffect(() => {
     if (!user?.email) return;
@@ -23,175 +23,234 @@ const MyHabits = () => {
     fetch(`https://backend-10-lime.vercel.app/api/my-habits/${user.email}`)
       .then((res) => res.json())
       .then((data) => {
-        const storedProgress = JSON.parse(localStorage.getItem("habitProgress") || "{}");
+        const storedProgress = JSON.parse(
+          localStorage.getItem("habitProgress") || "{}"
+        );
         const storedCompleted = getCompletedToday();
 
-        const mergedData = data.map((habit) => {
-          const completedToday = storedCompleted[habit._id] === today;
-          return {
-            ...habit,
-            streak: storedProgress[habit._id]?.streak || habit.streak || 0,
-            completedToday,
-          };
-        });
+        const merged = data.map((h) => ({
+          ...h,
+          streak: storedProgress[h._id]?.streak || h.streak || 0,
+          completedToday: storedCompleted[h._id] === today,
+        }));
 
-        setHabits(mergedData);
+        setHabits(merged);
       })
-      .catch((err) => {
-        console.error(err);
-        toast.error("Failed to load habits!");
-      })
+      .catch(() => toast.error("Failed to load habits"))
       .finally(() => setLoading(false));
   }, [user]);
 
   const handleComplete = async (id) => {
     const habit = habits.find((h) => h._id === id);
-
-    if (habit?.completedToday) {
-      toast.info("Already completed today!");
-      return;
-    }
+    if (habit.completedToday) return toast.info("Already completed today");
 
     try {
-     const res = await api.patch(`/habits/complete/${id}`
-    );
-
-    const data = res.data;
-
-      if (data.modifiedCount > 0) {
-        toast.success("Habit marked complete!");
-
-        const updatedHabits = habits.map((h) =>
+      const res = await api.patch(`/habits/complete/${id}`);
+      if (res.data.modifiedCount > 0) {
+        const updated = habits.map((h) =>
           h._id === id
-            ? { ...h, streak: (h.streak || 0) + 1, completedToday: true }
+            ? { ...h, streak: h.streak + 1, completedToday: true }
             : h
         );
-        setHabits(updatedHabits);
+        setHabits(updated);
 
-        const storedProgress = JSON.parse(localStorage.getItem("habitProgress") || "{}");
-        storedProgress[id] = { streak: (habit.streak || 0) + 1 };
-        localStorage.setItem("habitProgress", JSON.stringify(storedProgress));
+        const progress = JSON.parse(
+          localStorage.getItem("habitProgress") || "{}"
+        );
+        progress[id] = { streak: habit.streak + 1 };
+        localStorage.setItem("habitProgress", JSON.stringify(progress));
 
-        const storedCompleted = getCompletedToday();
-        storedCompleted[id] = today;
-        localStorage.setItem("completedHabits", JSON.stringify(storedCompleted));
+        const completed = getCompletedToday();
+        completed[id] = today;
+        localStorage.setItem("completedHabits", JSON.stringify(completed));
+
+        toast.success("Habit completed!");
       }
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to update streak!");
+    } catch {
+      toast.error("Failed to update habit");
     }
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = async () => {
     try {
-      const res = await api.delete(
-      `/habits/${id}`
-    );
-
-    const data = res.data;
-
-
-      if (data.deletedCount > 0) {
-        setHabits(habits.filter((habit) => habit._id !== id));
-        toast.success("Habit deleted!");
+      const res = await api.delete(`/habits/${selectedId}`);
+      if (res.data.deletedCount > 0) {
+        setHabits(habits.filter((h) => h._id !== selectedId));
+        toast.success("Habit deleted");
       }
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to delete habit!");
+    } catch {
+      toast.error("Delete failed");
     } finally {
       setShowConfirm(false);
       setSelectedId(null);
     }
   };
 
-  const openConfirmPopup = (id) => {
-    setSelectedId(id);
-    setShowConfirm(true);
-  };
-
-  if (loading) return <p className="text-center mt-10">Loading habits...</p>;
+  if (loading)
+    return <Loading></Loading>
 
   return (
-    <div className="max-w-7xl mx-auto pt-10">
-      <h2 className="text-3xl font-bold text-blue-700 mb-8 text-center">My Habits</h2>
+    <div className="bg-gray-900  py-20">
+
+    <div className="max-w-7xl mx-auto px-4 py-12">
+      <h2 className="text-3xl font-bold text-center mb-8 text-blue-600 dark:text-blue-400">
+        My Habits
+      </h2>
 
       {habits.length === 0 ? (
-        <p className="text-center text-gray-500">No habits added yet.</p>
+        <p className="text-center text-gray-500">No habits added yet</p>
       ) : (
-        <div className="overflow-x-auto mx-5">
-          <table className="w-full border-collapse border border-gray-200">
-            <thead className="bg-blue-100 text-left">
-              <tr>
-                <th className="p-2 border">Title</th>
-                <th className="p-2 border">Category</th>
-                <th className="p-2 border text-center">Streak</th>
-                <th className="p-2 border">Created</th>
-                <th className="p-2 border text-center">Actions</th>
-              </tr>
-            </thead>
+        <>
+<div className="hidden md:block overflow-x-auto rounded-xl border border-white/10 bg-[#020817]">
+  <table className="w-full text-left text-sm text-gray-300">
+    <thead className="bg-[#0f172a] text-gray-400 uppercase tracking-wide">
+      <tr>
+        <th className="px-6 py-4">Habit</th>
+        <th className="px-6 py-4">Category</th>
+        <th className="px-6 py-4 text-center">Streak</th>
+        <th className="px-6 py-4">Created</th>
+        <th className="px-6 py-4 text-center">Actions</th>
+      </tr>
+    </thead>
 
-            <tbody>
-              {habits.map((habit) => (
-                <tr key={habit._id} className="hover:bg-gray-50">
-                  <td className="p-2 border">{habit.title}</td>
-                  <td className="p-2 border">{habit.category}</td>
-                  <td className="p-2 border text-center">{habit.streak}</td>
-                  <td className="p-2 border">
-                    {new Date(habit.createdAt).toLocaleDateString()}
-                  </td>
+    <tbody className="divide-y divide-white/10">
+      {habits.map((h) => (
+        <tr
+          key={h._id}
+          className="hover:bg-white/5 transition"
+        >
+          {/* Title */}
+          <td className="px-6 py-4 font-medium text-white">
+            {h.title}
+          </td>
 
-                  <td className="p-2 border text-center space-x-2">
-                    <button
-                      onClick={() => handleComplete(habit._id)}
-                      disabled={habit.completedToday}
-                      className={`px-2 py-1 rounded text-white my-1 ${
-                        habit.completedToday
-                          ? "bg-gray-400 cursor-not-allowed"
-                          : "bg-green-500 hover:bg-green-600"
-                      }`}
-                    >
-                      {habit.completedToday ? "Completed ✅" : "Complete"}
-                    </button>
+          {/* Category */}
+          <td className="px-6 py-4">
+            <span className="px-3 py-1 rounded-full text-xs bg-blue-500/10 text-blue-400">
+              {h.category}
+            </span>
+          </td>
 
-                    <button
-                      onClick={() => navigate(`/updatehabit/${habit._id}`)}
-                      className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600 my-1"
-                    >
-                      Update
-                    </button>
+          {/* Streak */}
+          <td className="px-6 py-4 text-center">
+            🔥 <span className="font-semibold">{h.streak}</span>
+          </td>
 
-                    <button
-                      onClick={() => openConfirmPopup(habit._id)}
-                      className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 my-1"
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+          {/* Date */}
+          <td className="px-6 py-4">
+            {new Date(h.createdAt).toLocaleDateString()}
+          </td>
+
+          {/* Actions */}
+          <td className="px-6 py-4 text-center space-x-2">
+            <button
+              onClick={() => handleComplete(h._id)}
+              disabled={h.completedToday}
+              className={`px-3 py-1.5 rounded-md text-xs font-medium transition
+                ${
+                  h.completedToday
+                    ? "bg-gray-600 text-gray-300 cursor-not-allowed"
+                    : "bg-green-600 hover:bg-green-700 text-white"
+                }
+              `}
+            >
+              {h.completedToday ? "Completed" : "Complete"}
+            </button>
+
+            <button
+              onClick={() => navigate(`/updatehabit/${h._id}`)}
+              className="px-3 py-1.5 rounded-md text-xs font-medium
+                         bg-blue-600 hover:bg-blue-700 text-white transition"
+            >
+              Update
+            </button>
+
+            <button
+              onClick={() => {
+                setSelectedId(h._id);
+                setShowConfirm(true);
+              }}
+              className="px-3 py-1.5 rounded-md text-xs font-medium
+                         bg-red-600 hover:bg-red-700 text-white transition"
+            >
+              Delete
+            </button>
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
+
+
+          <div className="md:hidden space-y-4">
+            {habits.map((h) => (
+              <div
+                key={h._id}
+                className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow border dark:border-gray-700"
+              >
+                <h3 className="font-semibold text-lg mb-1">{h.title}</h3>
+                <p className="text-sm text-gray-500 mb-2">{h.category}</p>
+
+                <div className="flex justify-between text-sm mb-3">
+                  <span>🔥 Streak: {h.streak}</span>
+                  <span>
+                    📅 {new Date(h.createdAt).toLocaleDateString()}
+                  </span>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={() => handleComplete(h._id)}
+                    disabled={h.completedToday}
+                    className={`flex-1 py-2 rounded text-white ${
+                      h.completedToday
+                        ? "bg-gray-400"
+                        : "bg-green-600 hover:bg-green-700"
+                    }`}
+                  >
+                    {h.completedToday ? "Completed" : "Complete"}
+                  </button>
+
+                  <button
+                    onClick={() => navigate(`/updatehabit/${h._id}`)}
+                    className="flex-1 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                  >
+                    Update
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setSelectedId(h._id);
+                      setShowConfirm(true);
+                    }}
+                    className="flex-1 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
       )}
 
       {showConfirm && (
-        <div className="fixed inset-0 flex items-center justify-center  bg-opacity-50">
-          <div className=" rounded-lg shadow-lg p-6 w-96 bg-green-100 text-center">
-            <h3 className="text-lg font-semibold mb-4">
-              Are you sure you want to delete this habit?
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg w-80 text-center">
+            <h3 className="font-semibold mb-4">
+              Delete this habit?
             </h3>
-
             <div className="flex justify-center gap-4">
               <button
-                onClick={() => handleDelete(selectedId)}
-                className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+                onClick={handleDelete}
+                className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
               >
-                Yes, Delete
+                Delete
               </button>
-
               <button
                 onClick={() => setShowConfirm(false)}
-                className="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400"
+                className="bg-gray-300 dark:bg-gray-600 px-4 py-2 rounded"
               >
                 Cancel
               </button>
@@ -199,6 +258,8 @@ const MyHabits = () => {
           </div>
         </div>
       )}
+    </div>
+      
     </div>
   );
 };

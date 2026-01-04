@@ -1,91 +1,67 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { toast } from "react-toastify";
-import api from "../axios";
+import { FaStar, FaFire } from "react-icons/fa";
 
 const HabitDetails = () => {
   const { id } = useParams();
   const [habit, setHabit] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [completedToday, setCompletedToday] = useState(false);
-  const today = new Date().toISOString().split("T")[0];
+  const today = new Date().toISOString().split("T")[0];  
+const [completedToday, setCompletedToday] = useState(false);
+const [currentStreak, setCurrentStreak] = useState(0);
+
+
+
+useEffect(() => {
+   if (habit) {
+    setCurrentStreak(habit.streak || 0);
+  }
+  const completedData = JSON.parse(
+    localStorage.getItem("completedHabits") || "{}"
+  );
+
+  if (completedData[id] === today) {
+    setCompletedToday(true);
+  }
+}, [habit,id, today]);
+
+
 
   useEffect(() => {
-    const storedProgress = JSON.parse(
-      localStorage.getItem("habitProgress") || "{}"
-    );
-    const storedHabits = JSON.parse(
-      localStorage.getItem("completedHabits") || "{}"
-    );
-
-    fetch(
-      `https://backend-10-lime.vercel.app/api/habits/${id}`
-    )
-      .then((res) => res.json())
-      .then((data) => {
-        // Attach streak & completion history if stored locally
-        if (storedProgress[id]) {
-          data.streak = storedProgress[id].streak;
-          data.completionHistory = storedProgress[id].completionHistory;
-        }
-
-        setHabit(data);
-      })
+    fetch(`https://backend-10-lime.vercel.app/api/habits/${id}`)
+      .then(res => res.json())
+      .then(data => setHabit(data))
       .finally(() => setLoading(false));
+  }, [id]);
 
-    if (storedHabits[id] === today) {
-      setCompletedToday(true);
-    }
-  }, [id, today]);
+const handleMarkComplete = () => {
+  if (completedToday) {
+    toast.info("Already completed today!");
+    return;
+  }
 
-  const handleComplete = async () => {
-    if (completedToday) {
-      toast.info("Already completed today!");
-      return;
-    }
+  
+  const newStreak = currentStreak + 1;
+  setCurrentStreak(newStreak);
+  setCompletedToday(true);
 
-    try {
-      const res = await api.patch(
-        `/habits/complete/${id}`
-      );
+  toast.success("Habit marked complete!");
 
-      const data = res.data;
+  const completedData = JSON.parse(
+    localStorage.getItem("completedHabits") || "{}"
+  );
+  completedData[id] = today;
+  localStorage.setItem("completedHabits", JSON.stringify(completedData));
 
-      if (data.modifiedCount > 0 || data.success) {
-        toast.success("Habit marked complete for today!");
+  const streakData = JSON.parse(
+    localStorage.getItem("habitStreaks") || "{}"
+  );
+  streakData[id] = newStreak;
+  localStorage.setItem("habitStreaks", JSON.stringify(streakData));
+};
 
-        const updatedHabit = {
-          ...habit,
-          streak: (habit.streak || 0) + 1,
-          completionHistory: [...(habit.completionHistory || []), today],
-        };
 
-        setHabit(updatedHabit);
-        setCompletedToday(true);
-
-        // Store progress locally
-        const storedProgress = JSON.parse(
-          localStorage.getItem("habitProgress") || "{}"
-        );
-        storedProgress[id] = {
-          streak: updatedHabit.streak,
-          completionHistory: updatedHabit.completionHistory,
-        };
-        localStorage.setItem("habitProgress", JSON.stringify(storedProgress));
-
-        // Store today's completion
-        const storedHabits = JSON.parse(
-          localStorage.getItem("completedHabits") || "{}"
-        );
-        storedHabits[id] = today;
-        localStorage.setItem("completedHabits", JSON.stringify(storedHabits));
-      } else {
-        toast.info("Already marked complete today!");
-      }
-    } catch (err) {
-      toast.error("Failed to mark as complete!");
-    }
-  };
 
   if (loading)
     return <p className="text-center mt-10">Loading habit details...</p>;
@@ -93,77 +69,144 @@ const HabitDetails = () => {
   if (!habit)
     return <p className="text-center text-red-500 mt-10">Habit not found!</p>;
 
-  const last30Days = Array.from({ length: 30 }, (_, i) => {
-    const d = new Date();
-    d.setDate(d.getDate() - i);
-    return d.toISOString().split("T")[0];
-  });
-
-  const completedDays =
-    habit.completionHistory?.filter((d) => last30Days.includes(d)).length || 0;
-
-  const progress = Math.round((completedDays / 30) * 100);
-
   return (
-    <div className="max-w-2xl mx-auto mt-10 bg-white rounded-lg shadow-lg overflow-hidden border">
-      <img
-        src={habit.image || "https://via.placeholder.com/500"}
-        alt={habit.title}
-        className="w-11/12 mx-auto mt-5 rounded-t-2xl h-64 object-cover"
-      />
+    <section className="
+  min-h-screen bg-gray-50 dark:bg-gray-900
+  text-white
+">
 
-      <div className="p-6">
-        <div className="flex justify-between items-center mb-3">
-          <h2 className="text-2xl font-bold text-blue-700">{habit.title}</h2>
 
-          <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-medium">
-            🔥 Streak: {habit.streak || 0}
-          </span>
+<div className="max-w-7xl mx-auto  pt-32 px-5">
+<div className="flex lg:gap-20 gap-5 mx-auto">
+  <div className=" mb-10">
+            <img
+              src={habit.image}
+              alt="habit"
+              className="h-64 w-full object-cover rounded-xl"
+            />
+      </div>
+      
+      <div className="mb-10">
+        <h2 className="text-3xl font-bold mb-3 text-black dark:text-white ">{habit.title}</h2>
+        <p className="text-gray-600 leading-relaxed pb-10">
+          {habit.description}
+        </p>
+
+<div className="hidden sm:block">
+   <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12 ">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow">
+          <h4 className="font-semibold mb-2">Category</h4>
+          <p>{habit.category}</p>
         </div>
 
-        <p className="text-gray-700 mb-4">{habit.description}</p>
-        <p className="text-sm text-gray-500 mb-1">
-          🏷 Category: <span className="font-medium">{habit.category}</span>
-        </p>
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow ">
+          <h4 className="font-semibold mb-2">Current Streak</h4>
+          <p className="flex items-center gap-2 text-orange-500">
+            <FaFire /> {currentStreak} days
 
-        <p className="text-sm text-gray-500 mb-3">
-          👤 Creator: {habit.userName || "Unknown"}
-        </p>
-
-        <div className="mb-4">
-          <label className="text-sm font-medium">Progress (last 30 days)</label>
-          <div className="w-full bg-gray-200 rounded-full h-3 mt-1">
-            <div
-              className={`h-3 rounded-full transition-all duration-500 ${
-                progress === 100 ? "bg-green-600" : "bg-blue-600"
-              }`}
-              style={{ width: `${progress}%` }}
-            ></div>
-          </div>
-
-          <p className="text-sm text-gray-600 mt-1">
-            {progress}% completed
-            {progress === 100 && " 🎉 Goal Achieved!"}
           </p>
         </div>
 
-        <button
-          onClick={handleComplete}
-          disabled={completedToday || progress === 100}
-          className={`mt-4 w-full py-2 rounded-md transition ${
-            completedToday || progress === 100
-              ? "bg-gray-400 cursor-not-allowed text-gray-700"
-              : "bg-blue-600 text-white hover:bg-blue-700"
-          }`}
-        >
-          {completedToday
-            ? "Already Completed Today"
-            : progress === 100
-            ? "All Done! 🎯"
-            : "Mark Complete"}
-        </button>
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow">
+          <h4 className="font-semibold mb-2">Difficulty</h4>
+          <p>{habit.difficulty || "Medium"}</p>
+        </div>
       </div>
-    </div>
+</div>
+       
+      </div>
+</div>
+   
+<div className="sm:block md:hidden">
+   <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow">
+          <h4 className="font-semibold mb-2">Category</h4>
+          <p>{habit.category}</p>
+        </div>
+
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow">
+          <h4 className="font-semibold mb-2">Current Streak</h4>
+          <p className="flex items-center gap-2 text-orange-500">
+            <FaFire /> {habit.streak || 0} days
+          </p>
+        </div>
+
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow">
+          <h4 className="font-semibold mb-2">Difficulty</h4>
+          <p>{habit.difficulty || "Medium"}</p>
+        </div>
+      </div>
+</div>
+     
+     <div className="py-4">
+      <h3 className="text-2xl font-semibold mb-4">Description </h3>
+      <div className="bg-gray-50 dark:bg-gray-800 p-6 rounded-xl">
+        {habit.description}
+      </div>
+      
+     </div>
+
+      <div className="mb-14">
+        <h3 className="text-2xl font-semibold mb-4">User Reviews</h3>
+
+        <div className="bg-gray-50 dark:bg-gray-800 p-6 rounded-xl">
+          <p className="flex items-center gap-2 mb-2">
+            <FaStar className="text-yellow-500" /> 4.8 / 5
+          </p>
+          <p className="text-gray-600 dark:text-gray-300">
+            “This habit helped me stay consistent for over 30 days!”
+          </p>
+          <p className="text-sm mt-2 text-gray-400">— Anonymous User</p>
+        </div>
+      </div>
+
+      <button
+  onClick={handleMarkComplete}
+  disabled={completedToday}
+  className={`
+    block w-full text-center py-3 rounded-md transition mb-16
+    ${completedToday
+      ? "bg-gray-400 cursor-not-allowed text-gray-700"
+      : "bg-gradient-to-r from-[#255f85] to-[#1f4f6d] hover:from-[#133247] hover:to-[#133c55] text-white"}
+  `}
+>
+  {completedToday ? "Completed Today ✔" : "Mark Today as Complete"}
+</button>
+
+
+      <div>
+        <h3 className="text-2xl font-semibold mb-6">
+          Related Habits
+        </h3>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+          {[1, 2, 3, 4].map(item => (
+            <div
+              key={item}
+              className="bg-white dark:bg-gray-900 p-4 rounded-xl shadow "
+            >
+              <h4 className="font-semibold mb-2">
+                Morning Routine
+              </h4>
+              <p className="text-sm text-gray-500 mb-3">
+                Build a productive start to your day.
+              </p>
+
+              <Link
+                to={`/habit-details/`}
+                className="btn-primary"
+              >
+                View Details
+              </Link>
+            </div>
+          ))}
+        </div>
+      </div>
+</div>
+
+     
+
+    </section>
   );
 };
 

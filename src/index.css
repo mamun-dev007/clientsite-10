@@ -1,7 +1,22 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Tagesschrift&display=swap');
+
+
 @import "tailwindcss";
 @plugin "daisyui";
 
 a.active{
-    text-decoration: underline;
-    color: blue;
+    background-color: rgb(94, 94, 140);
+    color: white;
 }
+
+.tage {
+  font-family: "Tagesschrift", system-ui;
+  font-weight: 600;
+  font-style: normal;
+}
+
+ .inter-6 {
+    font-family: "inter", sans-serif;
+    font-weight: 600;
+  }
+

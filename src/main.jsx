@@ -15,8 +15,10 @@ import NotFound from "./routes/NotFound.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import { AuthProvider } from "./context/AuthContext.jsx";
 import UpdateHabit from "./routes/UpdateHabit.jsx";
-import Dashboard from "./components/Dashboard.jsx";
 import PublicHabits from "./routes/PublicHabit.jsx";
+import DashboardLayout from "./layouts/DashboardLayout.jsx";
+import DashboardHome from "./layouts/DashboardHome.jsx";
+import Profile from "./layouts/Profile.jsx";
 
 const router = createBrowserRouter([
   {
@@ -35,20 +37,18 @@ const router = createBrowserRouter([
       },
 
       {
-        path: "/my-habits",
+        path: "/add-habits",
         element: (
-          <ProtectedRoute>
-            <MyHabits />
-          </ProtectedRoute>
+            <AddHabit />
         ),
       },
       {
         path: "/PublicHabit",
-        element: <PublicHabits />, 
+        element: <PublicHabits />,
       },
       {
         path: "/habit-details/:id",
-        element: <HabitDetails />, 
+        element: <HabitDetails />,
       },
 
       { path: "/login", element: <Login /> },
@@ -63,9 +63,23 @@ const router = createBrowserRouter([
         ),
       },
 
-      { path: "dashboard", element: <Dashboard /> },
-
       { path: "*", element: <NotFound /> },
+    ],
+  },
+  {
+    path: "dashboard",
+    element: (
+      <ProtectedRoute>
+        <DashboardLayout />
+      </ProtectedRoute>
+    ),
+    children: [
+      {
+        index: true,
+        element: <DashboardHome />,
+      },
+      { path: "my-Habits", element: <MyHabits /> },
+      { path: "profile", element: <Profile /> },
     ],
   },
 ]);
